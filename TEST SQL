@@ -1,0 +1,81 @@
+--Q1:
+select * from [dbo].[Products] where [UnitPrice] between 30 and 40
+
+--Q2:
+select * from [dbo].[Products] 
+where [CategoryID] in 
+(select [CategoryID] from [dbo].[Categories]
+where [CategoryName]='Condiments')
+
+--Q3:
+select * from [dbo].[Products] 
+where [CategoryID] in 
+(select [CategoryID] from [dbo].[Categories]
+where [Description] like '%s%')
+order by [ProductName]
+
+--Q4:
+select distinct [ProductName] from [dbo].[Products]
+where [ProductID] in
+(select [ProductID] from [dbo].[Order Details]
+where [OrderID] in 
+(select [OrderID] from [dbo].[Orders]
+where [CustomerID] in
+(select [CustomerID] from [dbo].[Customers]
+where [CustomerID]='ALFKI')))
+
+--Q5:
+select * from [dbo].[Orders]
+where [ShipCountry] = 'Brazil' or [ShipCity] ='London'
+
+--Q6:
+select [ContactName] from [dbo].[Customers]
+where [CustomerID] in 
+(select [CustomerID] from [dbo].[Orders]
+where [ShipVia] in
+(select [ShipperID] from [dbo].[Shippers]
+where [CompanyName] = 'Federal Shipping'))
+
+--Q7:
+alter PROCEDURE ProductNameAndOrderPrice_ByOrderId
+@OrderId int
+AS
+BEGIN
+
+select [ProductName],[UnitPrice] from [dbo].[Products] 
+where [ProductID] in
+(select [ProductID] from [dbo].[Order Details]
+where [OrderID]=@OrderId)
+
+select SUM([dbo].[Products].UnitPrice) as TotalPrice
+from [dbo].[Order Details]
+inner join [dbo].[Products]
+on [dbo].[Products].ProductID = [dbo].[Order Details].ProductID
+where [OrderID]=@OrderId
+
+END
+
+EXEC ProductNameAndOrderPrice_ByOrderId @OrderId=10248;
+
+--Q8:
+select [CustomerID],[EmployeeID],[ShipVia],[Freight],[ShipName],[ShipAddress],[ShipCity],[ShipRegion],[ShipPostalCode],[ShipCountry] 
+from [dbo].[Orders]
+where [ShipVia] = 1 and  
+([EmployeeID] = 2 or [EmployeeID] = 5) and 
+[CustomerID] like 'B%'
+
+--Q9:
+select OD.OrderID, OD.ProductID, OD.UnitPrice, OD.Quantity, OD.Discount, O.OrderDate, O.EmployeeID, O.CustomerID 
+from [dbo].[Order Details] as OD 
+inner join  [dbo].[Orders] as O
+on O.OrderID = OD.OrderID --not working, only 3 results
+where OD.OrderID = 10248 and 
+[CustomerID] like 'VINET' 
+
+
+--Q10:
+select [CustomerID], [Region], [Country] from [dbo].[Customers]
+where [Country] like 'France' or [Country] like 'Canada'
+
+
+
